@@ -1,2 +1,3 @@
--define(API_HOST,<<"https://api.weixin.qq.com">>).
--define(ACCESS_TOKEN_PATH,<<"/cgi-bin/token">>).
+-define(WECHAT_API_HOST,<<"https://api.weixin.qq.com">>).
+-define(WECHAT_ACCESS_TOKEN_PATH,<<"/cgi-bin/token">>).
+-define(WECHAT_TICKET_PATH,<<"/cgi-bin/ticket/getticket">>).
