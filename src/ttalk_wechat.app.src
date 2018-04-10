@@ -8,9 +8,7 @@
     stdlib,
 		crypto,
 		public_key,
-		ssl,
-		unicode_util_compat,
-		idna
+		ssl
    ]},
   {env,[]},
   {modules, []},

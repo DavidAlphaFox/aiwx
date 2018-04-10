@@ -1,0 +1,2 @@
+-define(API_HOST,<<"https://api.weixin.qq.com">>).
+-define(ACCESS_TOKEN_PATH,<<"/cgi-bin/token">>).
