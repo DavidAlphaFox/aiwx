@@ -15,9 +15,9 @@
 %%====================================================================
 
 start(_StartType, _StartArgs) ->
-		application:start(unicode_util_compat),
-		application:start(idna),
-		application:ensure_all_started(hackney),
+    application:start(unicode_util_compat),
+    application:start(idna),
+    application:ensure_all_started(hackney),
     ttalk_wechat_sup:start_link().
 
 %%--------------------------------------------------------------------

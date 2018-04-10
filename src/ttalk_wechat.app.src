@@ -6,9 +6,9 @@
   {applications,
    [kernel,
     stdlib,
-		crypto,
-		public_key,
-		ssl
+    crypto,
+    public_key,
+    ssl
    ]},
   {env,[]},
   {modules, []},
