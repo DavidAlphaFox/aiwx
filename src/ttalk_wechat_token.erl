@@ -11,7 +11,7 @@ request_access_token(AppID,Secret)->
 																{<<"appid">>,AppID},
 																{<<"secret">>,Secret}]),
 		Body = do_api_get(URL),
-    jsx:decode(Body).
+		jsx:decode(Body).
     
 -spec request_ticket(AccessToken::binary(),Type::binary()) -> list().
 request_ticket(AccessToken,Type)->
