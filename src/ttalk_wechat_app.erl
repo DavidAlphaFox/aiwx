@@ -15,6 +15,7 @@
 %%====================================================================
 
 start(_StartType, _StartArgs) ->
+		application:ensure_all_started(hackney),
     ttalk_wechat_sup:start_link().
 
 %%--------------------------------------------------------------------
