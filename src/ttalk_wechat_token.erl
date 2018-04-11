@@ -8,22 +8,22 @@
 request_access_token(AppID,Secret)->
     URL = hackney_url:make_url(?WECHAT_API_HOST,?WECHAT_ACCESS_TOKEN_PATH,
 			       [{<<"grant_type">>,<<"client_credential">>},{<<"appid">>,AppID},{<<"secret">>,Secret}]),
-    Body = ttalk_wechat_http:do_get(URL),
+    Body = ttalk_wechat_http:api_get(URL),
     jsx:decode(Body).
     
 -spec request_ticket(AccessToken::binary(),Type::binary()) -> list().
 request_ticket(AccessToken,Type)->
     URL = hackney_url:make_url(?WECHAT_API_HOST,?WECHAT_TICKET_PATH,
 			       [{<<"type">>,Type},{<<"access_token">>,AccessToken}]),
-    Body = ttalk_wechat_http:do_get(URL),
+    Body = ttalk_wechat_http:api_get(URL),
     jsx:decode(Body).
     
 		
 -spec request_jsapi_ticket(AccessToken::binary()) -> list().
 request_jsapi_ticket(AccessToken)->
-    request_ticket(AccessToken,<<"jsapi">>).
+    request_ticket(AccessToken,?WECHAT_TICKET_TYPE_JS).
 
 -spec request_card_ticket(AccessToken::binary()) -> list().
 request_card_ticket(AccessToken)->
-    request_ticket(AccessToken,<<"wx_card">>).
+    request_ticket(AccessToken,?WECHAT_TICKET_TYPE_CARD).
 
