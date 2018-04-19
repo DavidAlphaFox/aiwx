@@ -15,9 +15,15 @@
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
-				 terminate/2, code_change/3]).
+	 terminate/2, code_change/3]).
 
 -define(SERVER, ?MODULE).
+
+
+-define(ttalk_config,{
+	  key :: {atom(),atom()|binary()|string()}, %% {app,key}
+	  value :: any()
+	 }).
 
 -record(state, {}).
 
@@ -33,7 +39,7 @@
 %% @end
 %%--------------------------------------------------------------------
 start_link() ->
-		gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -51,7 +57,10 @@ start_link() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
-		{ok, #state{}}.
+    process_flag(trap_exit, true),
+    ttalk_config = ets:new(ttalk_config,[named_table,set,
+					 {keypos, 1},{read_concurrency,true}]),
+    {ok, #state{}}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -68,8 +77,8 @@ init([]) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call(_Request, _From, State) ->
-		Reply = ok,
-		{reply, Reply, State}.
+    Reply = ok,
+    {reply, Reply, State}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -82,7 +91,7 @@ handle_call(_Request, _From, State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_cast(_Msg, State) ->
-		{noreply, State}.
+    {noreply, State}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -95,7 +104,7 @@ handle_cast(_Msg, State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_info(_Info, State) ->
-		{noreply, State}.
+    {noreply, State}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -109,7 +118,7 @@ handle_info(_Info, State) ->
 %% @end
 %%--------------------------------------------------------------------
 terminate(_Reason, _State) ->
-		ok.
+    ok.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -120,7 +129,7 @@ terminate(_Reason, _State) ->
 %% @end
 %%--------------------------------------------------------------------
 code_change(_OldVsn, State, _Extra) ->
-		{ok, State}.
+    {ok, State}.
 
 %%%===================================================================
 %%% Internal functions
