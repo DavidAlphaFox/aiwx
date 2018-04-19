@@ -8,7 +8,7 @@
 
 
 -record(wechat_token,{
-	  token_key :: {binary(),binary()} %% {app_id,type},
+	  token_key :: {binary(),binary()}, %% {app_id,type}
 	  token :: {binary(),binary()},
 	  expired_at :: integer()
 	 }).

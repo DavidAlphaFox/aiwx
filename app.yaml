@@ -1,0 +1,11 @@
+wechat_app:
+  - app_id: ""
+    secret: ""
+    name: ""
+    token: ""
+    aes_secret: ""
+  - app_id: ""
+    secret: ""
+    name: ""
+    token: ""
+    aes_secret: ""
