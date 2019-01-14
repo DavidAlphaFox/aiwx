@@ -8,7 +8,7 @@ verify(Signature, Timestamp, Nonce) ->
     TmpList = [Token, Timestamp, Nonce],
     TmpList2 = lists:sort(TmpList),
     TmpStr = string:join(TmpList2, ""),
-    Hash = ai_string:sha_string(TmpStr,upper),
+    Hash = ai_string:sha_string(TmpStr,lower),
     string:equal(Signature, Hash).
 
 sign_jsapi(Ticket,Timestamp,Nonce,Url)->

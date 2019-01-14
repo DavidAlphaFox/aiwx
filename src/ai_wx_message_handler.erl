@@ -34,7 +34,7 @@ handle(post,Req,State)->
 	
 handle(get,Req, State) ->
   QS = cowboy_req:parse_qs(Req),
-  Signature = ai_string:to_iolist(proplists:get_value(<<"signature">>,QS)),
+  Signature = proplists:get_value(<<"signature">>,QS),
   Timestamp = ai_string:to_iolist(proplists:get_value(<<"timestamp">>,QS)),
   Nonce = ai_string:to_iolist(proplists:get_value(<<"nonce">>,QS)),
   EcohStr = proplists:get_value(<<"echostr">>,QS),
