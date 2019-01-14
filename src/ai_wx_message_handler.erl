@@ -23,12 +23,12 @@ handle(post,Req,State)->
 	case maps:get(handler,State,undefined) of 
 		undefined-> 
 			Req1 = cowboy_req:reply(200, 
-					[{<<"content-type">>, <<"text/plain">>}], <<"">>, Req0),
+					#{<<"content-type">> => <<"text/plain">>}, <<"">>, Req0),
 			{ok,Req1,State};
 		Handler -> 
 			Reply = Handler:handle(Map),
 			Req1 = cowboy_req:reply(200,
-				[{<<"content-type">>, <<"application/xml">>}],Reply,Req0),
+				#{<<"content-type">> => <<"application/xml">>},Reply,Req0),
 			{ok,Req1,State}
 	end;
 	
@@ -42,12 +42,12 @@ handle(get,Req, State) ->
   Req0 = 
     if
     Verify == false ->
-        cowboy_req:reply(200, [
-          {<<"content-type">>, <<"text/plain">>}
-        ], <<"">>, Req);
+        cowboy_req:reply(200, 
+          #{<<"content-type">> => <<"text/plain">>}
+        , <<"">>, Req);
     true ->
       cowboy_req:reply(200, [
-        {<<"content-type">>, <<"text/plain">>}
+        #{<<"content-type">> => <<"text/plain">>}
       ], EcohStr, Req)
   end,
   {ok, Req0, State}.
