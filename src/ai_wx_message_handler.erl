@@ -3,6 +3,10 @@
 
 -export([init/2]).
 
+-callback handle_message(maps:maps()) -> binary().
+-callback handle_event(maps:maps())-> binary().
+
+
 init(Req,State)->
     QS = cowboy_req:parse_qs(Req),
     Verify = verify(QS),

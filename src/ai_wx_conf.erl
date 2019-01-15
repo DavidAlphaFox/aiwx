@@ -1,6 +1,15 @@
 -module(ai_wx_conf).
+
 -export([start/1]).
 -export([app_token/0,app_secret/0,app_id/0,app_key/0]).
+
+-callback app_token() -> string().
+-callback app_id()-> string().
+-callback app_secret()-> string().
+-callback app_key()-> string().
+
+
+
 -spec start(atom())-> ok.
 start(M)->
     Module = erlang:atom_to_list(M),
