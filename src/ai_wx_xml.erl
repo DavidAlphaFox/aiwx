@@ -1,12 +1,13 @@
 -module(ai_wx_xml).
 -include_lib("xmerl/include/xmerl.hrl").
 
--export([message/5]).
+-export([message/5,encrypted_message/4]).
 
 -define(TEXT_ELEM,#xmlElement{name = 'MsgType',content =
                                   [#xmlText{type = cdata,value = <<"text">>}]}).
 -define(LOC_ELEM,#xmlElement{name = 'MsgType',content =
                                   [#xmlText{type = cdata,value = <<"location">>}]}).
+
 message(text,MsgID,FromUser,ToUser,Content)->
     FromEl = #xmlElement{name = 'FromUserName',
         content =[#xmlText{type = cdata,value = ai_string:to_string(FromUser)}]},
@@ -49,5 +50,18 @@ message(location,MsgID,FromUser,ToUser,Content)->
     ai_string:to_string(xmerl:export_element(
                           #xmlElement{name = xml,
                                       content = [FromEl,ToEl,CreateTimeEl,?LOC_ELEM,LocXEl,LocYEl,LabelEl,ScaleEl,MsgIDEl]
+                                     },xmerl_xml)).    
+encrypted_message(Signature,Timestamp,Nonce,Msg)->
+    TimeEl = #xmlElement{name = 'TimeStamp',      
+                         content =[#xmlText{type = cdata,value = ai_string:to_string(Timestamp)}]},
+    NonceEl = #xmlElement{name = 'Nonce',      
+                          content =[#xmlText{type = cdata,value = ai_string:to_string(Nonce)}]},
+    MsgEl = #xmlElement{name = 'Encrypt',      
+                        content =[#xmlText{type = cdata,value = ai_string:to_string(Msg)}]},
+    SignEl = #xmlElement{name = 'MsgSignature',      
+                        content =[#xmlText{type = cdata,value = ai_string:to_string(Signature)}]},
+    ai_string:to_string(xmerl:export_element(
+                          #xmlElement{name = xml,
+                                      content = [TimeEl,NonceEl,MsgEl,SignEl]
                                      },xmerl_xml)).   
- 
+    

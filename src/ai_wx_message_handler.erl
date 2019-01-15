@@ -18,31 +18,15 @@ init(true,#{method := <<"POST">>} = Req,State)->
     handle(post,Req,State).
 
 handle(post,Req,State)->
-	{XmlElt,Req0} = decode(Req,State),
-		io:format("decode aes XML ~p~n",[XmlElt]),
-	Content = XmlElt#xmlElement.content,
-	Map =
-		lists:foldl(fun
-							(El, Acc) when erlang:is_record(El,xmlElement)->
-									Key = El#xmlElement.name,
-									[ElContent] = El#xmlElement.content,
-									Value = ElContent#xmlText.value,
-									Acc#{Key => Value};
-							(_El,Acc)->Acc
-		end,#{}, Content),
 	case maps:get(handler,State,undefined) of 
 		undefined-> 
           Req1 = cowboy_req:reply(200, 
                                   #{<<"content-type">> => <<"text/plain">>}, 
-                                  <<"">>, Req0),
+                                  <<"">>, Req),
           {ok,Req1,State};
 		Handler -> 
-			Reply = Handler:handle(Map),
-			Req1 = cowboy_req:reply(200,
-				#{<<"content-type">> => <<"application/xml">>},Reply,Req0),
-			{ok,Req1,State}
-	end;
-	
+			process(Handler,Req,State)		
+	end;	
 handle(get,Req, State) ->
     QS = cowboy_req:parse_qs(Req),
     EcohStr = proplists:get_value(<<"echostr">>,QS),
@@ -50,6 +34,29 @@ handle(get,Req, State) ->
                             #{<<"content-type">> => <<"text/plain">>}, 
                             EcohStr, Req),
     {ok, Req0, State}.
+
+process(Handler,Req,State)->
+	{XmlElt,Req0} = decode(Req,State),
+	Content = XmlElt#xmlElement.content,
+	Map =
+				lists:foldl(fun
+								(El, Acc) when erlang:is_record(El,xmlElement)->
+									 Key = El#xmlElement.name,
+									 [ElContent] = El#xmlElement.content,
+									 Value = ElContent#xmlText.value,
+									 Acc#{Key => Value};
+								(_El,Acc)->Acc
+					 end,#{}, Content),
+	Reply = Handler:handle(Map),
+	Reply0 = encode(Reply,Req0,State), 
+	Req1 = cowboy_req:reply(200,
+												#{<<"content-type">> => <<"application/xml">>},Reply0,Req0),
+	{ok,Req1,State}.
+verify(QS)->
+    Signature = proplists:get_value(<<"signature">>,QS),
+    Timestamp = proplists:get_value(<<"timestamp">>,QS),
+    Nonce = proplists:get_value(<<"nonce">>,QS),
+    ai_wx_signature:verify(Signature, Timestamp, Nonce).
 
 
 decode(Req,State)->
@@ -63,9 +70,19 @@ decode(Req,State)->
 						Timestamp = proplists:get_value(<<"timestamp">>,QS),
 						Nonce = proplists:get_value(<<"nonce">>,QS),
 						decrypt(Signature,Timestamp,Nonce,Body)
-		end,
+			end,
 		{XmlElt, _} = xmerl_scan:string(XmlBody),
 		{XmlElt,Req0}.
+
+read_body(Req)->
+    read_body(Req,<<>>).
+
+read_body(Req, Acc) ->
+    case cowboy_req:read_body(Req) of
+        {ok, Data, Req0} -> {ok, << Acc/binary, Data/binary >>, Req0};
+        {more, Data, Req0} -> read_body(Req0, << Acc/binary, Data/binary >>)
+		end.
+
 decrypt(Signature,Timestamp,Nonce, Body)->
 		[_H,P0] = binary:split(Body,<<"<Encrypt><![CDATA[">>),
 		[P1,_T] = binary:split(P0,<<"]]></Encrypt>">>),
@@ -91,23 +108,26 @@ decrypt(Body)->
 		<<_Random:16/binary,XmlBodySize:32/big-unsigned-integer,Rest0/binary>> = DecodeData,
 		<<XmlBody:XmlBodySize/binary,AppID/binary>> = Rest0,
 		ConfAppID = ai_string:to_string(ai_wx_conf:app_id()),
-		io:format("decode aes data ~ts AND id ~p~n",[XmlBody,AppID]),
 		if 
 				AppID == ConfAppID -> {ok,ai_string:to_iolist(XmlBody)};
 				true -> {error,app_id}
 		end.
 
-read_body(Req)->
-    read_body(Req,<<>>).
 
-read_body(Req, Acc) ->
-    case cowboy_req:read_body(Req) of
-        {ok, Data, Req0} -> {ok, << Acc/binary, Data/binary >>, Req0};
-        {more, Data, Req0} -> read_body(Req0, << Acc/binary, Data/binary >>)
+encode(Reply,Req,State)->
+	case maps:get(encrypt,State,true) of
+			false ->  Reply;
+			true  -> 
+					QS = cowboy_req:parse_qs(Req),
+					Timestamp = proplists:get_value(<<"timestamp">>,QS),
+					Nonce = proplists:get_value(<<"nonce">>,QS),
+					encrypt(Timestamp,Nonce,Reply)
 	end.
-
-verify(QS)->
-    Signature = proplists:get_value(<<"signature">>,QS),
-    Timestamp = proplists:get_value(<<"timestamp">>,QS),
-    Nonce = proplists:get_value(<<"nonce">>,QS),
-    ai_wx_signature:verify(Signature, Timestamp, Nonce).
+encrypt(Timestamp,Nonce,Reply)->
+		XmlBodySize = erlang:byte_size(Reply),
+		Random = ai_string:to_string(ai_ascii_random:rand(16)),
+		AppID = ai_string:to_string(ai_wx_conf:app_id()),
+		Msg = <<Random/binary,XmlBodySize:32/big-unsigned-integer,Reply/binary,AppID/binary>>,
+		Msg0 = ai_wx_pkcs7:pad(Msg),
+		Signature = ai_wx_signature:sign_message(Timestamp,Nonce,Msg0),
+		ai_wx_xml:encrypted_message(Signature,Timestamp,Nonce,Msg0).
