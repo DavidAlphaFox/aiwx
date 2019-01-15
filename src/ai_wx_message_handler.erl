@@ -87,11 +87,15 @@ decrypt(Body)->
 						{DecodeKey,DecodeIV};
 				true -> {DecodeKey,DecodeKey}
 			end,
-		DecodeData = crypto:block_decrypt(aes_cbc,Key,IV,Body),
-		<<_Random:16/binary,XmlBodySize:4/big-unsigned-integer,Rest/binary>> = DecodeData,
-		<<XmlBody:XmlBodySize/binary,AppID/binary>> = Rest,
+		DecodeData = ai_wx_pkcs7:unpad(crypto:block_decrypt(aes_cbc,Key,IV,Body)),
+		<<_Random:16/binary,XmlBodySize:32/big-unsigned-integer,Rest0/binary>> = DecodeData,
+		<<XmlBody:XmlBodySize/binary,AppID/binary>> = Rest0,
+		ConfAppID = ai_string:to_string(ai_wx_conf:app_id()),
 		io:format("decode aes data ~ts AND id ~p~n",[XmlBody,AppID]),
-		{ok,ai_string:to_iolist(XmlBody)}.
+		if 
+				AppID == ConfAppID -> {ok,ai_string:to_iolist(XmlBody)};
+				true -> {error,app_id}
+		end.
 
 read_body(Req)->
     read_body(Req,<<>>).
