@@ -5,7 +5,9 @@
 
 verify(Signature, Timestamp, Nonce) ->
     Token = ai_wx_conf:app_token(),
-    TmpList = [Token, Timestamp, Nonce],
+    Timestamp0 = ai_string:to_iolist(Timestamp),
+    Nonce0 = ai_string:to_iolist(Nonce),
+    TmpList = [Token, Timestamp0, Nonce0],
     TmpList2 = lists:sort(TmpList),
     TmpStr = string:join(TmpList2, ""),
     Hash = ai_string:sha_string(TmpStr,lower),
