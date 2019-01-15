@@ -1,6 +1,6 @@
 -module(ai_wx_conf).
 -export([start/1]).
--export([app_token/0,app_secret/0,app_id/0]).
+-export([app_token/0,app_secret/0,app_id/0,app_key/0]).
 -spec start(atom())-> ok.
 start(M)->
     Module = erlang:atom_to_list(M),
@@ -21,6 +21,10 @@ app_token()->
 app_id()->
     Backend = ai_wx_conf_module:backend(),
     Backend:app_id().
+
 app_secret()->
     Backend = ai_wx_conf_module:backend(),
     Backend:app_secret().
+app_key()->
+    Backend = ai_wx_conf_module:backend(),
+    Backend:app_key().
