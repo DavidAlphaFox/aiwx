@@ -94,16 +94,7 @@ decrypt(Signature,Timestamp,Nonce, Body)->
 				true ->{error,not_verified}
 		end.
 decrypt(Body)->
-		Base64Key = ai_wx_conf:app_key(),
-		DecodeKey = base64:decode(Base64Key ++ "="),
-		DecodeSize = erlang:byte_size(DecodeKey),
-		{Key,IV} =
-			if 
-				DecodeSize > 16 -> 
-					<<DecodeIV:16/binary,_Rest/bits>> = DecodeKey,
-						{DecodeKey,DecodeIV};
-				true -> {DecodeKey,DecodeKey}
-			end,
+		{Key,IV} = app_key(),
 		DecodeData = ai_wx_pkcs7:unpad(crypto:block_decrypt(aes_cbc,Key,IV,Body)),
 		<<_Random:16/binary,XmlBodySize:32/big-unsigned-integer,Rest0/binary>> = DecodeData,
 		<<XmlBody:XmlBodySize/binary,AppID/binary>> = Rest0,
@@ -113,6 +104,16 @@ decrypt(Body)->
 				true -> {error,app_id}
 		end.
 
+app_key()->
+		Base64Key = ai_wx_conf:app_key(),
+		DecodeKey = base64:decode(Base64Key ++ "="),
+		DecodeSize = erlang:byte_size(DecodeKey),
+		if
+				DecodeSize > 16 -> 
+					<<DecodeIV:16/binary,_Rest/bits>> = DecodeKey,
+					{DecodeKey,DecodeIV};
+				true -> {DecodeKey,DecodeKey}
+		end.
 
 encode(Reply,Req,State)->
 	case maps:get(encrypt,State,true) of
@@ -129,5 +130,8 @@ encrypt(Timestamp,Nonce,Reply)->
 		AppID = ai_string:to_string(ai_wx_conf:app_id()),
 		Msg = <<Random/binary,XmlBodySize:32/big-unsigned-integer,Reply/binary,AppID/binary>>,
 		Msg0 = ai_wx_pkcs7:pad(Msg),
-		Signature = ai_wx_signature:sign_message(Timestamp,Nonce,Msg0),
-		ai_wx_xml:encrypted_message(Signature,Timestamp,Nonce,Msg0).
+		{Key,IV} = app_key(),
+		Msg1 = crypto:block_encrypt(aes_cbc,Key,IV,Msg0),
+		Msg2 = base64:encode(Msg1),
+		Signature = ai_wx_signature:sign_message(Timestamp,Nonce,Msg2),
+		ai_wx_xml:encrypted_message(Signature,Timestamp,Nonce,Msg2).
