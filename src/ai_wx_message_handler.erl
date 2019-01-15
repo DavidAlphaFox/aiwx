@@ -67,13 +67,13 @@ decode(Req,State)->
 		{XmlElt, _} = xmerl_scan:string(XmlBody),
 		{XmlElt,Req0}.
 decrypt(Signature,Timestamp,Nonce, Body)->
-		[_H,P0] = binary:split(Body,<<"<Encrypt>">>),
-		[P1,_T] = binary:split(P0,<<"</Encrypt>">>),
+		[_H,P0] = binary:split(Body,<<"<Encrypt><![CDATA[">>),
+		[P1,_T] = binary:split(P0,<<"]]></Encrypt>">>),
 		XmlBody = ai_string:to_iolist(P1),
 
 		Verify = ai_wx_signature:verify(Signature,Timestamp,Nonce,XmlBody),
 		if 
-				Verify == true -> {ok,decrypt(P1)};
+				Verify == true -> decrypt(base64:decode(P1));
 				true ->{error,not_verified}
 		end.
 decrypt(Body)->
@@ -88,9 +88,11 @@ decrypt(Body)->
 				true -> {DecodeKey,DecodeKey}
 			end,
 		DecodeData = crypto:block_decrypt(aes_cbc,Key,IV,Body),
-		io:format("decode aes data ~ts~n",[DecodeData]),
-		ai_string:to_iolist(DecodeData).
-						
+		<<_Random:16/binary,XmlBodySize:4/big-unsigned-integer,Rest/binary>> = DecodeData,
+		<<XmlBody:XmlBodySize/binary,AppID/binary>> = Rest,
+		io:format("decode aes data ~ts AND id ~p~n",[XmlBody,AppID]),
+		{ok,ai_string:to_iolist(XmlBody)}.
+
 read_body(Req)->
     read_body(Req,<<>>).
 
