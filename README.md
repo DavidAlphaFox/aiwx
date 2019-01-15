@@ -62,11 +62,11 @@ ai_wx_message_handler可以用来处理`接收普通消息`和`接收事件消�
 
 `Module`为项目中真正处理用户消息的模块，该模块需要支持以下行为
 
-    -callback handle_message(maps:maps()) -> binary().
-    -callback handle_event(maps:maps())-> binary().
+    -callback handle_message(string(),maps:maps()) -> binary().
+    -callback handle_event(string(),maps:maps())-> binary().
 
-* `handle_message`用来处理用户消息
-* `handle_event`用来处理关注，扫码，菜单等事件
+* `handle_message`用来处理用户消息，第一个参数为MsgType
+* `handle_event`用来处理关注，扫码，菜单等事件，第一个参数为Event
 
 它们都会接受一个map作为参数，该map为微信公众平台[消息管理](https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421140453)中描述的消息的键值对，如下面例子
 

@@ -3,8 +3,8 @@
 
 -export([init/2]).
 
--callback handle_message(maps:maps()) -> binary().
--callback handle_event(maps:maps())-> binary().
+-callback handle_message(string(),maps:maps()) -> binary().
+-callback handle_event(string(),maps:maps())-> binary().
 
 
 init(Req,State)->
@@ -69,8 +69,10 @@ process(Handler,Map)->
 	MsgType = maps:get('MsgType',Map),
 	try 
 		if 
-			MsgType == "event" -> Handler:handle_event(Map);
-			true -> Handler:handle_message(Map)
+			MsgType == "event" -> 
+				Key = maps:get('Event',Map),
+				Handler:handle_event(Key,Map);
+			true -> Handler:handle_message(MsgType,Map)
 		end
 	catch 
 		_Reason:_Error -> error
