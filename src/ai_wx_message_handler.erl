@@ -21,8 +21,8 @@ handle(post,Req,State)->
 	case maps:get(handler,State,undefined) of 
 		undefined-> 
           Req1 = cowboy_req:reply(200, 
-                                  #{<<"content-type">> => <<"text/plain">>}, 
-                                  <<"">>, Req),
+                	#{<<"content-type">> => <<"text/plain">>}, 
+                    <<"">>, Req),
           {ok,Req1,State};
 		Handler -> 
 			process(Handler,Req,State)		
@@ -31,27 +31,47 @@ handle(get,Req, State) ->
     QS = cowboy_req:parse_qs(Req),
     EcohStr = proplists:get_value(<<"echostr">>,QS),
     Req0 = cowboy_req:reply(200,
-                            #{<<"content-type">> => <<"text/plain">>}, 
-                            EcohStr, Req),
+            #{<<"content-type">> => <<"text/plain">>}, 
+            EcohStr, Req),
     {ok, Req0, State}.
 
 process(Handler,Req,State)->
 	{XmlElt,Req0} = decode(Req,State),
 	Content = XmlElt#xmlElement.content,
 	Map =
-				lists:foldl(fun
-								(El, Acc) when erlang:is_record(El,xmlElement)->
-									 Key = El#xmlElement.name,
-									 [ElContent] = El#xmlElement.content,
-									 Value = ElContent#xmlText.value,
-									 Acc#{Key => Value};
-								(_El,Acc)->Acc
-					 end,#{}, Content),
-	Reply = Handler:handle(Map),
-	Reply0 = encode(Reply,Req0,State), 
-	Req1 = cowboy_req:reply(200,
-												#{<<"content-type">> => <<"application/xml">>},Reply0,Req0),
+		lists:foldl(fun
+			(El, Acc) when erlang:is_record(El,xmlElement)->
+				Key = El#xmlElement.name,
+				[ElContent] = El#xmlElement.content,
+				Value = ElContent#xmlText.value,
+				Acc#{Key => Value};
+			(_El,Acc)->Acc
+		end,#{}, Content),
+	Req1 =
+		case process(Handler,Map) of 
+			error -> 
+				cowboy_req:reply(200, 
+					#{<<"content-type">> => <<"text/plain">>}, 
+					<<"">>, Req0);
+			Reply ->
+				Reply0 = encode(Reply,Req0,State), 
+				cowboy_req:reply(200,
+					#{<<"content-type">> => <<"application/xml">>},
+					Reply0,Req0)
+		end,
 	{ok,Req1,State}.
+
+process(Handler,Map)->
+	MsgType = maps:get('MsgType',Map),
+	try 
+		if 
+			MsgType == "event" -> Handler:handle_event(Map);
+			true -> Handler:handle_message(Map)
+		end
+	catch 
+		_Reason:_Error -> error
+	end.
+
 verify(QS)->
     Signature = proplists:get_value(<<"signature">>,QS),
     Timestamp = proplists:get_value(<<"timestamp">>,QS),
