@@ -12,7 +12,7 @@ create(AccessToken, Menu) ->
         qs = [{<<"access_token">>,AccessToken}]
     },
     URL = ai_url:build(R0),
-    MenuBinary = jsx:encode(Menu),
+    MenuBinary = ai_wx_button:to_json(Menu),
     ai_wx_http:post(?API_HOST,URL,MenuBinary).
 
 retrieve(AccessToken) ->
