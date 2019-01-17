@@ -1,8 +1,10 @@
 -define(API_HOST,"api.weixin.qq.com").
+
+%% TOKEN
 -define(ACCESS_TOKEN_PATH,"/cgi-bin/token").
 -define(TICKET_TOKEN_PATH,"/cgi-bin/ticket/getticket").
 
--define(TOKEN_TYPE_ACCESS,<<"access_token">>).
--define(TOKEN_TYPE_JS,<<"jsapi">>).
--define(TOKEN_TYPE_CARD,<<"wx_card">>).
-
+%% MENU
+-define(MENU_CREATE_PATH,"/cgi-bin/menu/create").
+-define(MENU_RETRIEVE_PATH,"/cgi-bin/menu/get").
+-define(MENU_DELETE_PATH,"/cgi-bin/menu/delete").
