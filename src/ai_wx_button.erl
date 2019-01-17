@@ -31,6 +31,7 @@ to_map(Button,M)->
             to_map(Type,Field,Value,Acc)
         end,M,IndexedFields).
 to_map(_Type,name,undefined,_Acc)-> throw({error,{absent,name}});
+to_map(_Type,sub_button,undefined,Acc)->Acc;
 to_map(_Type,sub_button,Value,Acc)->
     SubButton = to_map(Value),
     Size = erlang:length(SubButton),
