@@ -17,7 +17,7 @@ get(HOST,Path)->
             {ok, Body} = gun:await_body(ConnPid, StreamRef),
             {Status,Headers,jsx:decode(Body)}
     end.
-post(HOST,Path, Body) ->
+post(HOST,Path, ReqBody) ->
     {ok, ConnPid} = gun:open(HOST,443, #{transport => tls}),
     {ok, _Protocol} = gun:await_up(ConnPid),
 
@@ -25,10 +25,10 @@ post(HOST,Path, Body) ->
         {<<"Content-Type">>, <<"application/json">>},
         {<<"accept">>, "application/json"},
         {<<"user-agent">>, "ai_wx/0.1.0"}
-    ],Body),
+    ],ReqBody),
     case gun:await(ConnPid, StreamRef) of
         {response, fin, Status, Headers} -> {Status,Headers};
         {response, nofin, Status, Headers} ->
-            {ok, Body} = gun:await_body(ConnPid, StreamRef),
-            {Status,Headers,jsx:decode(Body)}
+            {ok, ResBody} = gun:await_body(ConnPid, StreamRef),
+            {Status,Headers,jsx:decode(ResBody)}
     end.
