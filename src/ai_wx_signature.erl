@@ -1,10 +1,10 @@
 -module(ai_wx_signature).
 
--export([verify/3,verify/4]).
--export([sign_message/3,sign_jsapi/4]).
+-export([verify/4,verify/5]).
+-export([sign_message/4,sign_jsapi/4]).
 
-verify(Signature, Timestamp, Nonce) ->
-    Token = ai_wx_conf:app_token(),
+verify(Signature, Timestamp, Nonce,Ctx) ->
+    Token = ai_wx_conf:app_token(Ctx),
     Timestamp0 = ai_string:to_iolist(Timestamp),
     Nonce0 = ai_string:to_iolist(Nonce),
     TmpList = [Token, Timestamp0, Nonce0],
@@ -13,8 +13,8 @@ verify(Signature, Timestamp, Nonce) ->
     Hash = ai_string:sha_string(TmpStr,lower),
     string:equal(Signature, Hash).
 
-verify(Signature,Timestamp,Nonce,Msg)->
-    Token = ai_wx_conf:app_token(),
+verify(Signature,Timestamp,Nonce,Msg,Ctx)->
+    Token = ai_wx_conf:app_token(Ctx),
     Timestamp0 = ai_string:to_iolist(Timestamp),
     Nonce0 = ai_string:to_iolist(Nonce),
     Msg0 = ai_string:to_iolist(Msg),
@@ -24,8 +24,8 @@ verify(Signature,Timestamp,Nonce,Msg)->
     Hash = ai_string:sha_string(TmpStr,lower),
     string:equal(Signature, Hash).
 
-sign_message(Timestamp,Nonce,Msg)->
-    Token = ai_wx_conf:app_token(),
+sign_message(Timestamp,Nonce,Msg,Ctx)->
+    Token = ai_wx_conf:app_token(Ctx),
     Timestamp0 = ai_string:to_iolist(Timestamp),
     Nonce0 = ai_string:to_iolist(Nonce),
     Msg0 = ai_string:to_iolist(Msg),

@@ -1,12 +1,12 @@
 -module(ai_wx_conf).
 
 -export([start/1]).
--export([app_token/0,app_secret/0,app_id/0,app_key/0]).
+-export([app_token/1,app_secret/1,app_id/1,app_key/1]).
 
--callback app_token() -> string().
--callback app_id()-> string().
--callback app_secret()-> string().
--callback app_key()-> string().
+-callback app_token(Context :: term()) -> string().
+-callback app_id(Context :: term())-> string().
+-callback app_secret(Context :: term())-> string().
+-callback app_key(Context :: term())-> string().
 
 
 
@@ -23,17 +23,17 @@ backend_module(M) ->
         -spec backend() -> atom().
         backend() ->",M,".\n"]).
 
-app_token()->
+app_token(Ctx)->
     Backend = ai_wx_conf_module:backend(),
-    Backend:app_token().
+    Backend:app_token(Ctx).
 
-app_id()->
+app_id(Ctx)->
     Backend = ai_wx_conf_module:backend(),
-    Backend:app_id().
+    Backend:app_id(Ctx).
 
-app_secret()->
+app_secret(Ctx)->
     Backend = ai_wx_conf_module:backend(),
-    Backend:app_secret().
-app_key()->
+    Backend:app_secret(Ctx).
+app_key(Ctx)->
     Backend = ai_wx_conf_module:backend(),
-    Backend:app_key().
+    Backend:app_key(Ctx).

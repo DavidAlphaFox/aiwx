@@ -39,15 +39,18 @@
 
 其中的`Module`为包含微信配置信息的模块，该模块需要支持以下行为
 
-    -callback app_token() -> string().
-    -callback app_id()-> string().
-    -callback app_secret()-> string().
-    -callback app_key()-> string().
+    -callback app_token(Context) -> string().
+    -callback app_id(Context)-> string().
+    -callback app_secret(Context)-> string().
+    -callback app_key(Context)-> string().
+
+`Context` 是一个获取各配置的上下文，需要使用者去指定
 
 * `app_id`为`开发/基本配置/公众号开发信息`中的`开发者ID(AppID)`
 * `app_secret`为`开发/基本配置/公众号开发信息`中的`开发者密(AppSecret)`
 * `app_token`为`开发/基本配置/服务器配置`中的`令牌(Token)`
 * `app_key`为`开发/基本配置`中的`消息加解密密钥(EncodingAESKey)`
+
 
 #### 消息处理handler
 
@@ -62,9 +65,11 @@ ai_wx_message_handler可以用来处理`接收普通消息`和`接收事件消�
 
 `Module`为项目中真正处理用户消息的模块，该模块需要支持以下行为
 
-    -callback handle_message(string(),maps:maps()) -> binary().
-    -callback handle_event(string(),maps:maps())-> binary().
+    -callback init(Req,State) -> {ok,Req,Context}.
+    -callback handle_message(string(),maps:maps(),Context) -> binary().
+    -callback handle_event(string(),maps:maps(),Context)-> binary().
 
+* `init`是请求初始化阶段调用的，该阶段消息并未验证有效性，需要从Req中获得配置及后面处理事件的赏析文。
 * `handle_message`用来处理用户消息，第一个参数为MsgType
 * `handle_event`用来处理关注，扫码，菜单等事件，第一个参数为Event
 
