@@ -8,3 +8,6 @@
 -define(MENU_CREATE_PATH,"/cgi-bin/menu/create").
 -define(MENU_RETRIEVE_PATH,"/cgi-bin/menu/get").
 -define(MENU_DELETE_PATH,"/cgi-bin/menu/delete").
+
+%% MEDIA
+-define(MEDIA_UPLOAD_PATH,"/cgi-bin/media/upload").
