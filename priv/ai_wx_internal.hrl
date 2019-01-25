@@ -11,3 +11,5 @@
 
 %% MEDIA
 -define(MEDIA_UPLOAD_PATH,"/cgi-bin/media/upload").
+-define(MEDIA_GET_PATH,"/cgi-bin/media/get").
+-define(MEDIA_GET_JSSDK_PATH,"cgi-bin/media/get/jssdk").
